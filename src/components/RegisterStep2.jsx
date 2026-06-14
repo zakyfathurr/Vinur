@@ -6,18 +6,18 @@ const MAX_YEAR = new Date().getFullYear() - 1
 
 const Stepper = ({ label, displayValue, onUp, onDown, disableUp, disableDown }) => (
   <div className="flex-1">
-    <div className="bg-[#fafaf5] border-2 border-[#e3e3de] rounded-xl flex flex-col items-center py-2 overflow-hidden hover:border-[#b80049] transition-colors">
+    <div className="bg-surface border-2 border-surface-highest rounded-xl flex flex-col items-center py-2 overflow-hidden hover:border-brand-500 transition-colors">
       <button
         type="button"
         aria-label={`Tambah ${label}`}
         disabled={disableUp}
         onClick={onUp}
-        className="w-10 h-10 rounded-full hover:bg-[#eeeee9] flex items-center justify-center text-[#5b3f43] active:scale-95 transition-transform disabled:opacity-25 disabled:cursor-not-allowed"
+        className="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-ink-600 active:scale-95 transition-transform disabled:opacity-25 disabled:cursor-not-allowed"
       >
         <span className="material-symbols-outlined text-xl">expand_less</span>
       </button>
       <div className="h-16 flex items-center justify-center w-full px-2">
-        <span className="text-3xl font-bold text-[#1a1c19] text-center leading-none select-none truncate">
+        <span className="text-3xl font-bold text-ink-800 text-center leading-none select-none truncate">
           {displayValue}
         </span>
       </div>
@@ -26,12 +26,12 @@ const Stepper = ({ label, displayValue, onUp, onDown, disableUp, disableDown }) 
         aria-label={`Kurang ${label}`}
         disabled={disableDown}
         onClick={onDown}
-        className="w-10 h-10 rounded-full hover:bg-[#eeeee9] flex items-center justify-center text-[#5b3f43] active:scale-95 transition-transform disabled:opacity-25 disabled:cursor-not-allowed"
+        className="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-ink-600 active:scale-95 transition-transform disabled:opacity-25 disabled:cursor-not-allowed"
       >
         <span className="material-symbols-outlined text-xl">expand_more</span>
       </button>
     </div>
-    <p className="text-center mt-2 text-xs text-[#5b3f43] uppercase tracking-wider font-bold">
+    <p className="text-center mt-2 text-xs text-ink-600 uppercase tracking-wider font-bold">
       {label}
     </p>
   </div>
@@ -62,22 +62,22 @@ export default function RegisterStep2({ formData, update, go }) {
       <div className="flex items-center gap-3 mb-6">
         <button
           aria-label="Kembali"
-          className="p-2 rounded-xl hover:bg-[#eeeee9] text-[#5b3f43] transition-colors"
+          className="p-2 rounded-xl hover:bg-surface-container text-ink-600 transition-colors"
           onClick={() => go('register1')}
         >
           <ArrowLeftIcon />
         </button>
         <div className="flex-1">
-          <h2 className="text-lg font-bold text-[#1a1c19]">Info Anak</h2>
-          <p className="text-xs text-[#5b3f43]">Langkah 2 dari 2</p>
+          <h2 className="text-lg font-bold text-ink-800">Info Anak</h2>
+          <p className="text-xs text-ink-600">Langkah 2 dari 2</p>
         </div>
         <div className="flex gap-1.5">
-          <div className="w-6 h-1.5 bg-[#b80049] rounded-full" />
-          <div className="w-6 h-1.5 bg-[#b80049] rounded-full" />
+          <div className="w-6 h-1.5 bg-brand-500 rounded-full" />
+          <div className="w-6 h-1.5 bg-brand-500 rounded-full" />
         </div>
       </div>
 
-      {/* Child Name */}
+      {/* Child name */}
       <div className="mb-5">
         <label className="label-caps block mb-2" htmlFor="child-name">
           Nama Anak (opsional)
@@ -92,7 +92,7 @@ export default function RegisterStep2({ formData, update, go }) {
         />
       </div>
 
-      {/* Date of Birth */}
+      {/* Date of birth */}
       <div className="mb-4">
         <label className="label-caps block mb-3">Date of Birth</label>
         <div className="flex gap-4">
@@ -115,19 +115,19 @@ export default function RegisterStep2({ formData, update, go }) {
         </div>
       </div>
 
-      {/* Live Age Feedback */}
-      <div className="bg-[#eeeee9] rounded-lg p-4 flex items-center justify-center gap-3 mb-6 border border-[#b9f61d] transition-all duration-300">
-        <span className="material-symbols-outlined text-[#4b6700]" style={{ fontVariationSettings: "'FILL' 1" }}>
+      {/* Live age feedback */}
+      <div className="bg-surface-container rounded-lg p-4 flex items-center justify-center gap-3 mb-6 border border-lime transition-all duration-300">
+        <span className="material-symbols-outlined text-forest-500" style={{ fontVariationSettings: "'FILL' 1" }}>
           cake
         </span>
-        <span className="text-base text-[#1a1c19] font-semibold">
+        <span className="text-base text-ink-800 font-semibold">
           Child's Age: {ageDisplay}
         </span>
       </div>
 
       {/* CTA */}
       <button
-        className="w-full h-[72px] bg-[#b80049] text-white rounded-full font-bold text-base border-4 border-[#e2165f] transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:bg-[#e2165f] active:scale-95"
+        className="w-full h-[72px] bg-brand-500 text-white rounded-full font-bold text-base border-4 border-brand-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:bg-brand-600 active:scale-95"
         onClick={() => go('confirm')}
       >
         Next

@@ -16,10 +16,14 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
   const currentStage = STAGES[currentStageIndex]
 
   const getStageStatus = (stageId) => {
+    const idx = STAGES.findIndex((s) => s.id === stageId)
     const progress = stageProgress[stageId]
-    if (!progress || progress.maxLevel === 0) return 'locked'
-    if (progress.completedAt) return 'completed'
-    return 'in-progress'
+    if (progress?.completedAt) return 'completed'
+    if (progress?.maxLevel > 0) return 'in-progress'
+    // Stage 1 always available; later stages unlock when previous is completed
+    if (idx === 0) return 'available'
+    const prevDone = stageProgress[STAGES[idx - 1].id]?.completedAt
+    return prevDone ? 'available' : 'locked'
   }
 
   return (
@@ -287,6 +291,7 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
         const status = getStageStatus(stage.id)
         const isLocked = status === 'locked'
         const isCompleted = status === 'completed'
+        const isUnlocked = !isLocked
         const pos = NODE_POSITIONS[idx]
 
         return (
@@ -308,13 +313,13 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
                 className={[
                   'relative w-16 h-16 lg:w-20 lg:h-20 rounded-full font-bold text-xl lg:text-2xl transition-all',
                   'flex items-center justify-center shadow-xl border-4 border-white',
-                  isActive   ? 'ring-4 ring-white ring-offset-2 scale-110 animate-floating' : '',
-                  isCompleted && !isActive ? 'bg-forest-500 text-white' : '',
+                  isActive    ? 'ring-4 ring-white ring-offset-2 scale-110 animate-floating' : '',
+                  isCompleted ? 'bg-forest-500 text-white' : '',
                   isActive && !isCompleted ? 'bg-lime text-ink-800' : '',
-                  isLocked   ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60' : 'hover:scale-110 hover:shadow-2xl cursor-pointer',
+                  isLocked    ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60' : 'hover:scale-110 hover:shadow-2xl cursor-pointer',
                 ].join(' ')}
                 style={
-                  !isLocked && !isActive && !isCompleted
+                  isUnlocked && !isActive && !isCompleted
                     ? { background: stage.color, color: 'white' }
                     : undefined
                 }
@@ -346,16 +351,13 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
           <div className="w-10 h-10 bg-lime rounded-2xl flex items-center justify-center shadow-sm">
             <span className="text-ink-800 font-black text-sm select-none">V²</span>
           </div>
-          <span className="font-bold text-ink-800 text-lg" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
-            VINUR
-          </span>
+          <span className="font-display font-bold text-ink-800 text-lg">VINUR</span>
         </div>
 
         {/* Center: Tour button */}
         <button
           onClick={() => go('dashboard')}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-forest-500 text-white font-semibold text-sm hover:bg-forest-600 transition-colors shadow-sm"
-          style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          className="font-sans flex items-center gap-1.5 px-4 py-2 rounded-lg bg-forest-500 text-white font-semibold text-sm hover:bg-forest-600 transition-colors shadow-sm"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>supervisor_account</span>
           Go to Tour for Parents
@@ -368,8 +370,7 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
           </button>
           <button
             onClick={() => go('progress')}
-            className="px-4 py-2 rounded-lg bg-brand-500 text-white font-semibold text-sm hover:bg-brand-600 transition-colors"
-            style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            className="font-sans px-4 py-2 rounded-lg bg-brand-500 text-white font-semibold text-sm hover:bg-brand-600 transition-colors"
           >
             Progress
           </button>
