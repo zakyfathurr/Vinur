@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    background-color: #fafaf5;
+    color: #1a1c19;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    margin: 0;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+}
+
+@layer components {
+  .input-base {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-[#e3e3de] bg-[#fafaf5]
+           text-[#1a1c19] placeholder-[#8f6f73] text-sm
+           transition-all duration-200 outline-none
+           focus:border-[#b80049];
+  }
+  .input-valid {
+    @apply border-[#4b6700] bg-[#f0ffd0] focus:border-[#4b6700];
+  }
+  .input-error {
+    @apply border-[#ba1a1a] bg-[#ffdad6] focus:border-[#ba1a1a];
+  }
+  .btn-primary {
+    @apply w-full py-4 px-6 rounded-full font-bold text-white text-sm
+           bg-[#b80049] hover:bg-[#e2165f] active:scale-95
+           border-4 border-[#e2165f]
+           transition-all duration-200 shadow-lg
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus:outline-none;
+  }
+  .btn-ghost {
+    @apply w-full py-3.5 px-6 rounded-full font-semibold text-sm text-[#5b3f43]
+           border-2 border-[#e3e3de] hover:border-[#b80049] hover:text-[#b80049]
+           transition-all duration-150
+           focus:outline-none;
+  }
+  .card {
+    @apply bg-[#fafaf5] rounded-2xl shadow-card p-6;
+  }
+  .field-hint {
+    @apply text-xs mt-1.5 animate-fade-up;
+  }
+  .label-caps {
+    @apply text-xs font-bold text-[#5b3f43] uppercase tracking-wider;
+  }
+}
