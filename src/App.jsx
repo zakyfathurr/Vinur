@@ -4,7 +4,7 @@ import RegisterStep1 from './components/RegisterStep1'
 import RegisterStep2 from './components/RegisterStep2'
 import ConfirmationScreen from './components/ConfirmationScreen'
 import Dashboard from './components/Dashboard'
-import GameScreen from './components/GameScreen'
+import MenuScreen from './components/MenuScreen'
 import { STAGES, initProgress } from './data/stages'
 
 const FEATURES = [
@@ -21,7 +21,7 @@ const BrandPanel = () => (
     <div>
       <div className="flex items-center gap-3 mb-12">
         <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-          <span className="font-display text-white text-xl font-black select-none">M²</span>
+          <span className="font-display text-white text-xl font-black select-none">V²</span>
         </div>
         <div>
           <p className="font-display text-white font-bold text-lg leading-tight">VINUR</p>
@@ -89,7 +89,7 @@ export default function App() {
   }
 
   if (screen === 'game') {
-    return <GameScreen activeStageId={activeStageId} stageProgress={stageProgress} go={setScreen} />
+    return <MenuScreen activeStageId={activeStageId} stageProgress={stageProgress} go={setScreen} />
   }
 
   if (screen === 'dashboard') {

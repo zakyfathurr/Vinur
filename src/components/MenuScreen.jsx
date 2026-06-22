@@ -1,4 +1,8 @@
+import { useState, useRef } from 'react'
 import { STAGES } from '../data/stages'
+import MenuTutorial from './MenuTutorial'
+
+const TUTORIAL_KEY = 'vinur_game_tutorial_seen'
 
 // Percentage positions matching equipment centers in the 1200×600 SVG viewBox
 const NODE_POSITIONS = [
@@ -11,9 +15,77 @@ const NODE_POSITIONS = [
 
 const LADDER_RUNGS = [280, 300, 320, 340, 360, 380, 400, 420, 440, 460]
 
-export default function GameScreen({ activeStageId, stageProgress, go }) {
+export default function MenuScreen({ activeStageId, stageProgress, go }) {
   const currentStageIndex = activeStageId ? STAGES.findIndex((s) => s.id === activeStageId) : 0
   const currentStage = STAGES[currentStageIndex]
+
+  // ── Tutorial state ──
+  const [showTutorial, setShowTutorial] = useState(() => {
+    try {
+      return !localStorage.getItem(TUTORIAL_KEY)
+    } catch {
+      return true
+    }
+  })
+
+  const activeNodeRef = useRef(null)
+  const tourRef = useRef(null)
+  const volumeRef = useRef(null)
+  const progressRef = useRef(null)
+  const closeRef = useRef(null)
+  const stageInfoRef = useRef(null)
+
+  const finishTutorial = () => {
+    setShowTutorial(false)
+    try {
+      localStorage.setItem(TUTORIAL_KEY, '1')
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const tutorialSteps = [
+    {
+      ref: activeNodeRef,
+      icon: 'sports_esports',
+      title: 'Peta Petualangan',
+      description:
+        'Ketuk lingkaran bertanda "SEKARANG!" untuk mulai belajar angka. Tahap berikutnya akan terbuka setelah tahap sebelumnya selesai.',
+    },
+    {
+      ref: progressRef,
+      icon: 'bar_chart',
+      title: 'Progres Belajar',
+      description:
+        'Lihat perkembangan anak: jumlah soal yang benar, waktu belajar, dan tahap yang sudah dikuasai.',
+    },
+    {
+      ref: tourRef,
+      icon: 'supervisor_account',
+      title: 'Panduan Orang Tua',
+      description:
+        'Buka halaman khusus orang tua untuk melihat info, tips, dan cara mendampingi anak saat belajar.',
+    },
+    {
+      ref: volumeRef,
+      icon: 'volume_up',
+      title: 'Pengaturan Suara',
+      description: 'Nyalakan atau matikan efek suara dan musik selama permainan berlangsung.',
+    },
+    {
+      ref: stageInfoRef,
+      icon: 'flag',
+      title: 'Info Tahap',
+      description:
+        'Bar ini menunjukkan tahap yang sedang dikerjakan anak dan tahap berikutnya yang akan terbuka — supaya selalu tahu posisi belajar saat ini.',
+    },
+    {
+      ref: closeRef,
+      icon: 'close',
+      title: 'Keluar',
+      description: 'Tutup permainan dan kembali ke halaman utama kapan saja.',
+    },
+  ]
 
   const getStageStatus = (stageId) => {
     const idx = STAGES.findIndex((s) => s.id === stageId)
@@ -309,6 +381,7 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
               )}
 
               <button
+                ref={isActive ? activeNodeRef : undefined}
                 disabled={isLocked}
                 className={[
                   'relative w-16 h-16 lg:w-20 lg:h-20 rounded-full font-bold text-xl lg:text-2xl transition-all',
@@ -356,6 +429,7 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
 
         {/* Center: Tour button */}
         <button
+          ref={tourRef}
           onClick={() => go('dashboard')}
           className="font-sans flex items-center gap-1.5 px-4 py-2 rounded-lg bg-forest-500 text-white font-semibold text-sm hover:bg-forest-600 transition-colors shadow-sm"
         >
@@ -365,16 +439,28 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          <button className="material-symbols-outlined text-2xl text-ink-600 hover:text-ink-800 transition-colors">
+          <button
+            onClick={() => setShowTutorial(true)}
+            aria-label="Tampilkan tutorial"
+            className="material-symbols-outlined text-2xl text-ink-600 hover:text-ink-800 transition-colors"
+          >
+            help
+          </button>
+          <button
+            ref={volumeRef}
+            className="material-symbols-outlined text-2xl text-ink-600 hover:text-ink-800 transition-colors"
+          >
             volume_up
           </button>
           <button
+            ref={progressRef}
             onClick={() => go('progress')}
             className="font-sans px-4 py-2 rounded-lg bg-brand-500 text-white font-semibold text-sm hover:bg-brand-600 transition-colors"
           >
             Progress
           </button>
           <button
+            ref={closeRef}
             onClick={() => go('dashboard')}
             className="material-symbols-outlined text-2xl text-ink-600 hover:text-ink-800 transition-colors"
           >
@@ -384,7 +470,7 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
       </div>
 
       {/* ── Bottom info bar (floating) ── */}
-      <div className="absolute bottom-0 inset-x-0 bg-white/70 backdrop-blur-sm px-6 lg:px-10 py-4">
+      <div ref={stageInfoRef} className="absolute bottom-0 inset-x-0 bg-white/70 backdrop-blur-sm px-6 lg:px-10 py-4">
         <p className="text-sm text-ink-600">
           <strong>STAGE SEKARANG:</strong> {currentStage.name}
           {currentStageIndex < STAGES.length - 1 && (
@@ -394,6 +480,9 @@ export default function GameScreen({ activeStageId, stageProgress, go }) {
           )}
         </p>
       </div>
+
+      {/* ── First-visit tutorial ── */}
+      {showTutorial && <MenuTutorial steps={tutorialSteps} onFinish={finishTutorial} />}
     </div>
   )
 }

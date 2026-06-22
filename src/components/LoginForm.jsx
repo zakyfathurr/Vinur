@@ -16,10 +16,13 @@ const Logo = () => (
 
 export default function LoginForm({ formData, update, go }) {
   const [showPass, setShowPass] = useState(false)
-  const [touched, setTouched] = useState({ email: false })
+  const [touched, setTouched] = useState({ email: false, password: false })
 
   const emailValid = isValidEmail(formData.email)
+  const passwordFilled = formData.password.length > 0
+  const canSubmit = emailValid && passwordFilled
   const showEmailFeedback = touched.email && formData.email.length > 0
+  const showPasswordFeedback = touched.password && !passwordFilled
 
   return (
     <div className="card">
@@ -78,10 +81,11 @@ export default function LoginForm({ formData, update, go }) {
             id="login-password"
             type={showPass ? 'text' : 'password'}
             autoComplete="current-password"
-            className="input-base pr-10"
+            className={`input-base pr-10 ${showPasswordFeedback ? 'input-error' : ''}`}
             placeholder="Masukkan password"
             value={formData.password}
             onChange={(e) => update({ password: e.target.value })}
+            onBlur={() => setTouched((t) => ({ ...t, password: true }))}
           />
           <button
             type="button"
@@ -92,9 +96,16 @@ export default function LoginForm({ formData, update, go }) {
             {showPass ? <EyeClosedIcon /> : <EyeOpenIcon />}
           </button>
         </div>
+        {showPasswordFeedback && (
+          <p className="field-hint text-rose-500">Password wajib diisi</p>
+        )}
       </div>
 
-      <button className="btn-primary mb-4" onClick={() => go('game')}>
+      <button
+        className="btn-primary mb-4"
+        disabled={!canSubmit}
+        onClick={() => go('game')}
+      >
         Masuk
       </button>
 
