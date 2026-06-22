@@ -88,7 +88,7 @@ export default function App() {
     return <ConfirmationScreen formData={formData} go={setScreen} />
   }
 
-  if (screen === 'game') {
+  if (screen === 'menu') {
     return <MenuScreen activeStageId={activeStageId} stageProgress={stageProgress} go={setScreen} />
   }
 

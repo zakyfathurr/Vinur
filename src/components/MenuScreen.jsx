@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { STAGES } from '../data/stages'
 import MenuTutorial from './MenuTutorial'
 
-const TUTORIAL_KEY = 'vinur_game_tutorial_seen'
+const TUTORIAL_KEY = 'vinur_menu_tutorial_seen'
 
 // Percentage positions matching equipment centers in the 1200×600 SVG viewBox
 const NODE_POSITIONS = [
@@ -31,7 +31,6 @@ export default function MenuScreen({ activeStageId, stageProgress, go }) {
   const activeNodeRef = useRef(null)
   const tourRef = useRef(null)
   const volumeRef = useRef(null)
-  const progressRef = useRef(null)
   const closeRef = useRef(null)
   const stageInfoRef = useRef(null)
 
@@ -53,18 +52,11 @@ export default function MenuScreen({ activeStageId, stageProgress, go }) {
         'Ketuk lingkaran bertanda "SEKARANG!" untuk mulai belajar angka. Tahap berikutnya akan terbuka setelah tahap sebelumnya selesai.',
     },
     {
-      ref: progressRef,
-      icon: 'bar_chart',
-      title: 'Progres Belajar',
-      description:
-        'Lihat perkembangan anak: jumlah soal yang benar, waktu belajar, dan tahap yang sudah dikuasai.',
-    },
-    {
       ref: tourRef,
       icon: 'supervisor_account',
       title: 'Panduan Orang Tua',
       description:
-        'Buka halaman khusus orang tua untuk melihat info, tips, dan cara mendampingi anak saat belajar.',
+        'Buka halaman khusus orang tua untuk melihat progres belajar anak, pengaturan, tips, dan info lainnya.',
     },
     {
       ref: volumeRef,
@@ -451,13 +443,6 @@ export default function MenuScreen({ activeStageId, stageProgress, go }) {
             className="material-symbols-outlined text-2xl text-ink-600 hover:text-ink-800 transition-colors"
           >
             volume_up
-          </button>
-          <button
-            ref={progressRef}
-            onClick={() => go('progress')}
-            className="font-sans px-4 py-2 rounded-lg bg-brand-500 text-white font-semibold text-sm hover:bg-brand-600 transition-colors"
-          >
-            Progress
           </button>
           <button
             ref={closeRef}

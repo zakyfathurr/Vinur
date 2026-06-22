@@ -99,7 +99,7 @@ export default function ConfirmationScreen({ formData, go }) {
         <div className="text-center px-10 lg:px-14 pb-10 lg:pb-14">
           <button
             className="w-full md:w-auto min-w-[280px] h-16 bg-brand-500 text-white rounded-full px-10 font-bold text-lg border-4 border-brand-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 inline-flex items-center justify-center gap-3"
-            onClick={() => go('game')}
+            onClick={() => go('menu')}
           >
             Mulai Belajar!
             <span className="material-symbols-outlined text-2xl">arrow_forward</span>

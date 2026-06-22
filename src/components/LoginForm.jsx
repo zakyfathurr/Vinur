@@ -104,7 +104,7 @@ export default function LoginForm({ formData, update, go }) {
       <button
         className="btn-primary mb-4"
         disabled={!canSubmit}
-        onClick={() => go('game')}
+        onClick={() => go('menu')}
       >
         Masuk
       </button>
