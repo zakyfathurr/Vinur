@@ -375,6 +375,11 @@ export default function MenuScreen({ activeStageId, stageProgress, go }) {
               <button
                 ref={isActive ? activeNodeRef : undefined}
                 disabled={isLocked}
+                onClick={() => {
+                  if (isUnlocked) {
+                    go('game-play', stage.id)
+                  }
+                }}
                 className={[
                   'relative w-16 h-16 lg:w-20 lg:h-20 rounded-full font-bold text-xl lg:text-2xl transition-all',
                   'flex items-center justify-center shadow-xl border-4 border-white',

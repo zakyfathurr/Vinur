@@ -5,6 +5,7 @@ import RegisterStep2 from './components/RegisterStep2'
 import ConfirmationScreen from './components/ConfirmationScreen'
 import Dashboard from './components/Dashboard'
 import MenuScreen from './components/MenuScreen'
+import GameScreen from './components/GameScreen'
 import { STAGES, initProgress } from './data/stages'
 
 const FEATURES = [
@@ -78,22 +79,40 @@ export default function App() {
 
   const update = (fields) => setFormData((prev) => ({ ...prev, ...fields }))
 
+  const handleGo = (targetScreen, payload) => {
+    setScreen(targetScreen)
+    if (targetScreen === 'game-play' && payload) {
+      setActiveStageId(payload)
+    }
+  }
+
   const content = {
-    login:     <LoginForm     formData={formData} update={update} go={setScreen} />,
-    register1: <RegisterStep1 formData={formData} update={update} go={setScreen} />,
-    register2: <RegisterStep2 formData={formData} update={update} go={setScreen} />,
+    login:     <LoginForm     formData={formData} update={update} go={handleGo} />,
+    register1: <RegisterStep1 formData={formData} update={update} go={handleGo} />,
+    register2: <RegisterStep2 formData={formData} update={update} go={handleGo} />,
   }
 
   if (screen === 'confirm') {
-    return <ConfirmationScreen formData={formData} go={setScreen} />
+    return <ConfirmationScreen formData={formData} go={handleGo} />
   }
 
   if (screen === 'menu') {
     return <MenuScreen activeStageId={activeStageId} stageProgress={stageProgress} go={setScreen} />
   }
 
-  if (screen === 'dashboard') {
-    return <Dashboard formData={formData} go={setScreen} />
+  if (screen === 'game-play') {
+    return (
+      <GameScreen 
+        activeStageId={activeStageId} 
+        stageProgress={stageProgress} 
+        setStageProgress={setStageProgress} 
+        go={handleGo} 
+      />
+    )
+  }
+
+  if (screen === 'dashboard' || screen === 'progress') {
+    return <Dashboard formData={formData} stageProgress={stageProgress} go={handleGo} />
   }
 
   return (
@@ -101,7 +120,7 @@ export default function App() {
       <BrandPanel />
 
       <div className="flex-1 flex items-center justify-center bg-surface-low p-6 lg:p-12 overflow-y-auto">
-        <div key={screen} className="w-full max-w-[420px] animate-fade-up">
+        <div key={screen} className={screen === 'dashboard' || screen === 'game-play' ? 'w-full animate-fade-up' : 'w-full max-w-[420px] animate-fade-up'}>
           <div className="flex items-center gap-2.5 mb-6 lg:hidden">
             <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
               <span className="font-display text-white font-black text-sm select-none">M²</span>
