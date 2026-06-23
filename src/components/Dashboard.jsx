@@ -20,7 +20,7 @@ export default function Dashboard({ formData, stageProgress = {}, go }) {
       {/* Top nav */}
       <nav className="bg-surface-low px-6 lg:px-10 py-6 flex items-center justify-between sticky top-0 z-10">
         <button 
-          onClick={() => go('game')}
+          onClick={() => go('menu')}
           className="flex items-center gap-2 text-ink-600 font-bold text-sm tracking-widest hover:text-ink-800 transition-colors uppercase"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>

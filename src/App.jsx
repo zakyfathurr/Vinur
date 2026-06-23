@@ -97,7 +97,7 @@ export default function App() {
   }
 
   if (screen === 'menu') {
-    return <MenuScreen activeStageId={activeStageId} stageProgress={stageProgress} go={setScreen} />
+    return <MenuScreen activeStageId={activeStageId} stageProgress={stageProgress} go={handleGo} />
   }
 
   if (screen === 'game-play') {

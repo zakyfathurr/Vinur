@@ -299,7 +299,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
       {/* Top Header */}
       <header className="flex items-center justify-between p-6 w-full max-w-5xl mx-auto">
         <button 
-          onClick={() => go('game')}
+          onClick={() => go('menu')}
           className="flex items-center gap-2 px-4 py-2 bg-ink-100 rounded-full text-ink-600 text-sm font-bold hover:bg-ink-200 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
