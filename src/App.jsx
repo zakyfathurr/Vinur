@@ -112,7 +112,7 @@ export default function App() {
   }
 
   if (screen === 'dashboard' || screen === 'progress') {
-    return <Dashboard formData={formData} stageProgress={stageProgress} go={handleGo} />
+    return <Dashboard formData={formData} update={update} stageProgress={stageProgress} go={handleGo} />
   }
 
   return (

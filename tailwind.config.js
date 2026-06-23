@@ -57,6 +57,8 @@ export default {
         floating: 'floating 3s ease-in-out infinite',
         burst: 'burst 0.6s ease-out forwards',
         shake: 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+        pop: 'pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'head-shake': 'headShake 0.6s ease-in-out both',
       },
       keyframes: {
         fadeUp: {
@@ -77,7 +79,19 @@ export default {
           '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
           '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
           '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
-        }
+        },
+        pop: {
+          '0%': { transform: 'scale(0.3)', opacity: '0' },
+          '60%': { transform: 'scale(1.15)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        headShake: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '20%': { transform: 'rotate(-14deg)' },
+          '40%': { transform: 'rotate(14deg)' },
+          '60%': { transform: 'rotate(-10deg)' },
+          '80%': { transform: 'rotate(10deg)' },
+        },
       },
     },
   },

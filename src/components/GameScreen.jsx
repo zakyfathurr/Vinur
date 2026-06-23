@@ -38,6 +38,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
   const [selected, setSelected] = useState(null)
   const [wrongShake, setWrongShake] = useState(false)
   const [showComplete, setShowComplete] = useState(false)
+  const [feedback, setFeedback] = useState(null) // 'correct' | 'wrong' | null
   
   const level = stage.levels[currentLevelIdx]
   
@@ -46,6 +47,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
     
     if (val === level.answer) {
       setSelected(val)
+      setFeedback('correct')
       setStageProgress(prev => ({
         ...prev,
         [stage.id]: {
@@ -58,6 +60,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
 
       setTimeout(() => {
         setSelected(null)
+        setFeedback(null)
         if (currentLevelIdx < stage.levels.length - 1) {
           setCurrentLevelIdx(prev => prev + 1)
         } else {
@@ -71,9 +74,10 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
             }
           }))
         }
-      }, 1000)
+      }, 1200)
     } else {
       setWrongShake(true)
+      setFeedback('wrong')
       setStageProgress(prev => ({
         ...prev,
         [stage.id]: {
@@ -82,6 +86,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
         }
       }))
       setTimeout(() => setWrongShake(false), 500)
+      setTimeout(() => setFeedback(null), 1100)
     }
   }
 
@@ -303,7 +308,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
           className="flex items-center gap-2 px-4 py-2 bg-ink-100 rounded-full text-ink-600 text-sm font-bold hover:bg-ink-200 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
-          Dashboard
+          Game Menu
         </button>
 
         <div className="flex flex-col items-center">
@@ -334,6 +339,41 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-6 relative w-full">
         {renderGameContent()}
+
+        {/* Answer Feedback Sticker (ADHD-friendly) */}
+        {feedback && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+            {feedback === 'correct' ? (
+              <div className="flex flex-col items-center animate-pop">
+                <div className="w-36 h-36 bg-forest-500 rounded-full flex items-center justify-center shadow-2xl ring-8 ring-lime/50">
+                  <span
+                    className="material-symbols-outlined text-white"
+                    style={{ fontSize: 84, fontVariationSettings: "'FILL' 1" }}
+                  >
+                    thumb_up
+                  </span>
+                </div>
+                <p className="mt-5 px-7 py-2.5 bg-forest-500 text-white font-display font-black text-2xl rounded-full shadow-lg">
+                  Hebat! 🎉
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-36 h-36 bg-wood rounded-full flex items-center justify-center shadow-2xl ring-8 ring-ink-100 animate-head-shake">
+                  <span
+                    className="material-symbols-outlined text-ink-600"
+                    style={{ fontSize: 84, fontVariationSettings: "'FILL' 1" }}
+                  >
+                    sentiment_dissatisfied
+                  </span>
+                </div>
+                <p className="mt-5 px-7 py-2.5 bg-wood text-ink-800 font-display font-black text-2xl rounded-full shadow-lg">
+                  Coba lagi ya!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stage Complete Modal */}
         {showComplete && (

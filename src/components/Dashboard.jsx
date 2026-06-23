@@ -1,6 +1,56 @@
+import { useState } from 'react'
 import { STAGES, getSuccessRate, formatTime } from '../data/stages'
+import { MONTHS, calculateAge, formatAge } from '../utils'
 
-export default function Dashboard({ formData, stageProgress = {}, go }) {
+const MIN_YEAR = 2010
+const MAX_YEAR = new Date().getFullYear() - 1
+const YEARS = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MAX_YEAR - i)
+
+const InfoRow = ({ icon, label, value }) => (
+  <div className="flex items-center gap-4 py-4">
+    <span className="material-symbols-outlined text-ink-400">{icon}</span>
+    <div className="flex-1 min-w-0">
+      <div className="text-[10px] font-bold text-ink-400 tracking-wider uppercase">{label}</div>
+      <div className="text-sm font-semibold text-ink-800 truncate">{value}</div>
+    </div>
+  </div>
+)
+
+export default function Dashboard({ formData, update, stageProgress = {}, go }) {
+  const [tab, setTab] = useState('progress')
+
+  // Parent / child profile (for Settings tab)
+  const birthYear = parseInt(formData.birthYear) || 2020
+  const birthMonth = parseInt(formData.birthMonth) || 1
+  const { years, months } = calculateAge(birthYear, birthMonth)
+  const ageDisplay = formatAge(years, months)
+  const birthMonthName = MONTHS[birthMonth - 1]
+
+  // ── Profile edit state ──
+  const [editing, setEditing] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftMonth, setDraftMonth] = useState(birthMonth)
+  const [draftYear, setDraftYear] = useState(birthYear)
+
+  const draftAgeParts = calculateAge(draftYear, draftMonth)
+  const draftAge = formatAge(draftAgeParts.years, draftAgeParts.months)
+
+  const startEdit = () => {
+    setDraftName(formData.childName || '')
+    setDraftMonth(birthMonth)
+    setDraftYear(birthYear)
+    setEditing(true)
+  }
+
+  const saveEdit = () => {
+    update({
+      childName: draftName.trim(),
+      birthMonth: String(draftMonth),
+      birthYear: String(draftYear),
+    })
+    setEditing(false)
+  }
+
   // Calculate overall progress
   let totalLevelsCompleted = 0
   let totalLevelsAvailable = 0
@@ -24,7 +74,7 @@ export default function Dashboard({ formData, stageProgress = {}, go }) {
           className="flex items-center gap-2 text-ink-600 font-bold text-sm tracking-widest hover:text-ink-800 transition-colors uppercase"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
-          Dashboard
+          Game Menu
         </button>
         
         <div className="flex flex-col items-center">
@@ -33,14 +83,40 @@ export default function Dashboard({ formData, stageProgress = {}, go }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="material-symbols-outlined text-ink-600">notifications</button>
-          <div className="w-10 h-10 bg-brand-200 rounded-full flex items-center justify-center overflow-hidden border border-ink-200">
+          <button
+            onClick={() => setTab('settings')}
+            aria-label="Buka pengaturan profil"
+            className={`w-10 h-10 bg-brand-200 rounded-full flex items-center justify-center overflow-hidden border transition-all ${
+              tab === 'settings' ? 'border-brand-500 ring-2 ring-brand-200' : 'border-ink-200 hover:border-brand-300'
+            }`}
+          >
             <span className="material-symbols-outlined text-brand-700">person</span>
-          </div>
+          </button>
         </div>
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 lg:px-10 py-6">
+        {/* Tab switcher: Progress | Settings */}
+        <div className="inline-flex bg-ink-100 rounded-full p-1 mb-8">
+          {[
+            { id: 'progress', label: 'Progress', icon: 'monitoring' },
+            { id: 'settings', label: 'Settings', icon: 'settings' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                tab === t.id ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-500 hover:text-ink-700'
+              }`}
+            >
+              <span className="material-symbols-outlined text-base">{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'progress' && (
+        <div className="animate-fade-up">
         <div className="mb-10">
           <h1 className="font-display text-3xl font-black text-ink-900 mb-2">Progress Overview</h1>
           <p className="text-ink-500 text-sm max-w-lg leading-relaxed">
@@ -197,6 +273,144 @@ export default function Dashboard({ formData, stageProgress = {}, go }) {
             <div className="text-[10px] font-bold text-brand-200 tracking-[0.2em] uppercase">Consistency is key!</div>
           </div>
         </div>
+        </div>
+        )}
+
+        {tab === 'settings' && (
+        <div className="animate-fade-up">
+          <div className="mb-10">
+            <h1 className="font-display text-3xl font-black text-ink-900 mb-2">Settings</h1>
+            <p className="text-ink-500 text-sm max-w-lg leading-relaxed">
+              Kelola profil anak dan akun orang tua Anda.
+            </p>
+          </div>
+
+          {/* Profile card */}
+          <div className="bg-white rounded-[2rem] p-8 mb-6 shadow-sm">
+            <div className="flex items-center gap-5 mb-6">
+              <div className="w-20 h-20 bg-brand-100 rounded-full flex items-center justify-center shrink-0">
+                <span
+                  className="material-symbols-outlined text-brand-700 text-4xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  person
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-2xl font-display font-bold text-ink-900 truncate">
+                  {formData.childName || 'Si Kecil'}
+                </h2>
+                <p className="text-ink-500 text-sm">Usia {ageDisplay}</p>
+              </div>
+              {!editing && (
+                <button
+                  onClick={startEdit}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand-50 text-brand-700 text-sm font-bold hover:bg-brand-100 transition-colors shrink-0"
+                >
+                  <span className="material-symbols-outlined text-base">edit</span>
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {!editing ? (
+              <div className="divide-y divide-ink-100 border-t border-ink-100">
+                <InfoRow icon="mail" label="Email Orang Tua" value={formData.email || '-'} />
+                <InfoRow icon="child_care" label="Nama Anak" value={formData.childName || '-'} />
+                <InfoRow icon="cake" label="Tanggal Lahir" value={`${birthMonthName} ${birthYear}`} />
+              </div>
+            ) : (
+              <div className="border-t border-ink-100 pt-6 animate-fade-up">
+                {/* Nama Anak */}
+                <div className="mb-4">
+                  <label htmlFor="edit-name" className="block text-[10px] font-bold text-ink-400 tracking-wider uppercase mb-2">
+                    Nama Anak
+                  </label>
+                  <input
+                    id="edit-name"
+                    type="text"
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                    placeholder="Nama anak"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 bg-surface text-ink-800 text-sm outline-none transition-colors focus:border-brand-500"
+                  />
+                </div>
+
+                {/* Tanggal Lahir */}
+                <div className="mb-4">
+                  <label className="block text-[10px] font-bold text-ink-400 tracking-wider uppercase mb-2">
+                    Tanggal Lahir
+                  </label>
+                  <div className="flex gap-3">
+                    <select
+                      aria-label="Bulan lahir"
+                      value={draftMonth}
+                      onChange={(e) => setDraftMonth(parseInt(e.target.value))}
+                      className="flex-1 px-4 py-3 rounded-xl border-2 border-ink-200 bg-surface text-ink-800 text-sm outline-none transition-colors focus:border-brand-500"
+                    >
+                      {MONTHS.map((m, i) => (
+                        <option key={m} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                    <select
+                      aria-label="Tahun lahir"
+                      value={draftYear}
+                      onChange={(e) => setDraftYear(parseInt(e.target.value))}
+                      className="w-32 px-4 py-3 rounded-xl border-2 border-ink-200 bg-surface text-ink-800 text-sm outline-none transition-colors focus:border-brand-500"
+                    >
+                      {YEARS.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Live age preview */}
+                <div className="flex items-center gap-2 text-ink-500 text-sm mb-6">
+                  <span className="material-symbols-outlined text-base text-brand-500" style={{ fontVariationSettings: "'FILL' 1" }}>cake</span>
+                  Usia anak: <strong className="text-ink-800">{draftAge}</strong>
+                </div>
+
+                {/* Save / Cancel */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="flex-1 py-3 rounded-xl border-2 border-ink-200 text-ink-600 font-bold text-sm hover:bg-ink-100 transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    className="flex-1 py-3 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-base">check</span>
+                    Simpan
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Logout */}
+          <button
+            onClick={() => go('login')}
+            className="w-full bg-white rounded-[2rem] p-6 shadow-sm flex items-center justify-between hover:bg-rose-50 transition-colors group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-rose-500">logout</span>
+              </div>
+              <div className="text-left">
+                <div className="font-display font-bold text-ink-900">Keluar</div>
+                <div className="text-xs text-ink-500">Logout dari akun ini</div>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-ink-300 group-hover:text-rose-500 transition-colors">
+              chevron_right
+            </span>
+          </button>
+        </div>
+        )}
 
       </main>
     </div>
