@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { STAGES } from '../data/stages'
 
 const PuzzleIcon = () => (
@@ -12,12 +12,18 @@ const NUM_TO_TEXT = {
   5: 'LIMA', 6: 'ENAM', 7: 'TUJUH', 8: 'DELAPAN', 9: 'SEMBILAN', 10: 'SEPULUH'
 }
 
-export default function GameScreen({ activeStageId, stageProgress, setStageProgress, go }) {
+export default function GameScreen({ activeStageId, stageProgress, setStageProgress, syncProgress, go }) {
   const [currentStageIdx, setCurrentStageIdx] = useState(
     STAGES.findIndex(s => s.id === activeStageId)
   )
-  
+
   const stage = STAGES[currentStageIdx]
+
+  // Always points at the latest full progress map (for unmount flush)
+  const progressMapRef = useRef(stageProgress)
+  useEffect(() => {
+    progressMapRef.current = stageProgress
+  }, [stageProgress])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,6 +40,16 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
     }, 1000);
     return () => clearInterval(timer);
   }, [stage.id, setStageProgress]);
+
+  // Flush the final progress of a stage to the backend when leaving it
+  // (stage change or unmounting the screen) — captures accumulated timeSpent.
+  useEffect(() => {
+    const sid = stage.id
+    return () => {
+      const p = progressMapRef.current[sid]
+      if (p && syncProgress) syncProgress(sid, p)
+    }
+  }, [stage.id, syncProgress]);
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0)
   const [selected, setSelected] = useState(null)
   const [wrongShake, setWrongShake] = useState(false)
@@ -48,6 +64,13 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
     if (val === level.answer) {
       setSelected(val)
       setFeedback('correct')
+      const cur = stageProgress[stage.id]
+      const next = {
+        ...cur,
+        solved: cur.solved + 1,
+        attempts: cur.attempts + 1,
+        maxLevel: Math.max(cur.maxLevel, currentLevelIdx + 1),
+      }
       setStageProgress(prev => ({
         ...prev,
         [stage.id]: {
@@ -57,6 +80,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
           maxLevel: Math.max(prev[stage.id].maxLevel, currentLevelIdx + 1)
         }
       }))
+      syncProgress?.(stage.id, next)
 
       setTimeout(() => {
         setSelected(null)
@@ -66,18 +90,21 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
         } else {
           // Stage complete
           setShowComplete(true)
+          const completedAt = new Date().toISOString()
           setStageProgress(prev => ({
             ...prev,
             [stage.id]: {
               ...prev[stage.id],
-              completedAt: new Date().toISOString()
+              completedAt
             }
           }))
+          syncProgress?.(stage.id, { ...progressMapRef.current[stage.id], completedAt })
         }
       }, 1200)
     } else {
       setWrongShake(true)
       setFeedback('wrong')
+      const cur = stageProgress[stage.id]
       setStageProgress(prev => ({
         ...prev,
         [stage.id]: {
@@ -85,6 +112,7 @@ export default function GameScreen({ activeStageId, stageProgress, setStageProgr
           attempts: prev[stage.id].attempts + 1
         }
       }))
+      syncProgress?.(stage.id, { ...cur, attempts: cur.attempts + 1 })
       setTimeout(() => setWrongShake(false), 500)
       setTimeout(() => setFeedback(null), 1100)
     }

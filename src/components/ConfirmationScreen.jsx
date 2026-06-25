@@ -1,12 +1,38 @@
+import { useState } from 'react'
 import { MONTHS, calculateAge, formatAge } from '../utils'
+import { api, setToken } from '../api'
 
-export default function ConfirmationScreen({ formData, go }) {
+export default function ConfirmationScreen({ formData, go, hydrate }) {
   const birthYear = parseInt(formData.birthYear) || 2020
   const birthMonth = parseInt(formData.birthMonth) || 1
   const { years, months } = calculateAge(birthYear, birthMonth)
   const ageDisplay = formatAge(years, months)
   const birthMonthName = MONTHS[birthMonth - 1]
   const childName = formData.childName || 'Si Kecil'
+
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleStart = async () => {
+    setSubmitting(true)
+    setError('')
+    try {
+      const data = await api.register({
+        email: formData.email,
+        password: formData.password,
+        childName: formData.childName,
+        birthMonth,
+        birthYear,
+      })
+      setToken(data.token)
+      hydrate(data)
+      go('menu')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-wood flex items-center justify-center p-6 lg:p-10 relative overflow-hidden">
@@ -97,11 +123,18 @@ export default function ConfirmationScreen({ formData, go }) {
 
         {/* CTA */}
         <div className="text-center px-10 lg:px-14 pb-10 lg:pb-14">
+          {error && (
+            <p className="text-sm text-rose-500 mb-4 flex items-center justify-center gap-1.5">
+              <span className="material-symbols-outlined text-base">error</span>
+              {error}
+            </p>
+          )}
           <button
-            className="w-full md:w-auto min-w-[280px] h-16 bg-brand-500 text-white rounded-full px-10 font-bold text-lg border-4 border-brand-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 inline-flex items-center justify-center gap-3"
-            onClick={() => go('menu')}
+            disabled={submitting}
+            className="w-full md:w-auto min-w-[280px] h-16 bg-brand-500 text-white rounded-full px-10 font-bold text-lg border-4 border-brand-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 inline-flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleStart}
           >
-            Mulai Belajar!
+            {submitting ? 'Membuat akun…' : 'Mulai Belajar!'}
             <span className="material-symbols-outlined text-2xl">arrow_forward</span>
           </button>
           <p className="mt-5 text-sm text-ink-600 max-w-sm mx-auto">

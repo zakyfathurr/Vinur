@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LoginForm from './components/LoginForm'
 import RegisterStep1 from './components/RegisterStep1'
 import RegisterStep2 from './components/RegisterStep2'
@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard'
 import MenuScreen from './components/MenuScreen'
 import GameScreen from './components/GameScreen'
 import { STAGES, initProgress } from './data/stages'
+import { api, getToken, clearToken } from './api'
 
 const FEATURES = [
   { icon: '🧠', title: 'Berbasis ABA', desc: 'Prompt → Response → Reinforcement' },
@@ -76,8 +77,59 @@ export default function App() {
   const [stageProgress, setStageProgress] = useState(() =>
     Object.fromEntries(STAGES.map((s) => [s.id, initProgress()]))
   )
+  const [loading, setLoading] = useState(() => !!getToken())
 
   const update = (fields) => setFormData((prev) => ({ ...prev, ...fields }))
+
+  // Fill local state from a server { user, progress } payload
+  const hydrateSession = (data) => {
+    if (data?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        email: data.user.email || '',
+        childName: data.user.childName || '',
+        birthMonth: String(data.user.birthMonth ?? 1),
+        birthYear: String(data.user.birthYear ?? 2020),
+        password: '',
+        confirmPassword: '',
+      }))
+    }
+    const serverProgress = data?.progress || {}
+    setStageProgress(
+      Object.fromEntries(
+        STAGES.map((s) => [s.id, { ...initProgress(), ...(serverProgress[s.id] || {}) }])
+      )
+    )
+  }
+
+  // Restore session on refresh if a token exists
+  useEffect(() => {
+    if (!getToken()) return
+    api
+      .getMe()
+      .then((data) => {
+        hydrateSession(data)
+        setScreen('menu')
+      })
+      .catch(() => clearToken())
+      .finally(() => setLoading(false))
+  }, [])
+
+  // Persist a stage's progress to the backend (fire-and-forget)
+  const syncProgress = (stageId, progressObj) => {
+    if (!getToken()) return
+    api.updateProgress(stageId, progressObj).catch((e) => console.warn('sync progress gagal:', e.message))
+  }
+
+  const logout = () => {
+    clearToken()
+    setFormData({
+      email: '', password: '', confirmPassword: '',
+      childName: '', birthYear: '2020', birthMonth: '1',
+    })
+    setStageProgress(Object.fromEntries(STAGES.map((s) => [s.id, initProgress()])))
+    setScreen('login')
+  }
 
   const handleGo = (targetScreen, payload) => {
     setScreen(targetScreen)
@@ -86,14 +138,25 @@ export default function App() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-low">
+        <div className="flex flex-col items-center gap-3">
+          <span className="material-symbols-outlined text-brand-500 text-4xl animate-spin">progress_activity</span>
+          <p className="text-sm text-ink-500">Memuat…</p>
+        </div>
+      </div>
+    )
+  }
+
   const content = {
-    login:     <LoginForm     formData={formData} update={update} go={handleGo} />,
+    login:     <LoginForm     formData={formData} update={update} go={handleGo} hydrate={hydrateSession} />,
     register1: <RegisterStep1 formData={formData} update={update} go={handleGo} />,
     register2: <RegisterStep2 formData={formData} update={update} go={handleGo} />,
   }
 
   if (screen === 'confirm') {
-    return <ConfirmationScreen formData={formData} go={handleGo} />
+    return <ConfirmationScreen formData={formData} go={handleGo} hydrate={hydrateSession} />
   }
 
   if (screen === 'menu') {
@@ -102,17 +165,18 @@ export default function App() {
 
   if (screen === 'game-play') {
     return (
-      <GameScreen 
-        activeStageId={activeStageId} 
-        stageProgress={stageProgress} 
-        setStageProgress={setStageProgress} 
-        go={handleGo} 
+      <GameScreen
+        activeStageId={activeStageId}
+        stageProgress={stageProgress}
+        setStageProgress={setStageProgress}
+        syncProgress={syncProgress}
+        go={handleGo}
       />
     )
   }
 
   if (screen === 'dashboard' || screen === 'progress') {
-    return <Dashboard formData={formData} update={update} stageProgress={stageProgress} go={handleGo} />
+    return <Dashboard formData={formData} update={update} stageProgress={stageProgress} go={handleGo} logout={logout} />
   }
 
   return (

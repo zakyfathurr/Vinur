@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { STAGES, getSuccessRate, formatTime } from '../data/stages'
 import { MONTHS, calculateAge, formatAge } from '../utils'
+import { api } from '../api'
 
 const MIN_YEAR = 2010
 const MAX_YEAR = new Date().getFullYear() - 1
@@ -16,8 +17,9 @@ const InfoRow = ({ icon, label, value }) => (
   </div>
 )
 
-export default function Dashboard({ formData, update, stageProgress = {}, go }) {
+export default function Dashboard({ formData, update, stageProgress = {}, go, logout }) {
   const [tab, setTab] = useState('progress')
+  const [saving, setSaving] = useState(false)
 
   // Parent / child profile (for Settings tab)
   const birthYear = parseInt(formData.birthYear) || 2020
@@ -42,13 +44,26 @@ export default function Dashboard({ formData, update, stageProgress = {}, go }) 
     setEditing(true)
   }
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
+    setSaving(true)
+    // Optimistic local update so the UI feels instant
     update({
       childName: draftName.trim(),
       birthMonth: String(draftMonth),
       birthYear: String(draftYear),
     })
-    setEditing(false)
+    try {
+      await api.updateProfile({
+        childName: draftName.trim(),
+        birthMonth: draftMonth,
+        birthYear: draftYear,
+      })
+    } catch (err) {
+      console.warn('simpan profil gagal:', err.message)
+    } finally {
+      setSaving(false)
+      setEditing(false)
+    }
   }
 
   // Calculate overall progress
@@ -381,10 +396,11 @@ export default function Dashboard({ formData, update, stageProgress = {}, go }) 
                   </button>
                   <button
                     onClick={saveEdit}
-                    className="flex-1 py-3 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-colors flex items-center justify-center gap-1.5"
+                    disabled={saving}
+                    className="flex-1 py-3 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="material-symbols-outlined text-base">check</span>
-                    Simpan
+                    {saving ? 'Menyimpan…' : 'Simpan'}
                   </button>
                 </div>
               </div>
@@ -393,7 +409,7 @@ export default function Dashboard({ formData, update, stageProgress = {}, go }) 
 
           {/* Logout */}
           <button
-            onClick={() => go('login')}
+            onClick={() => (logout ? logout() : go('login'))}
             className="w-full bg-white rounded-[2rem] p-6 shadow-sm flex items-center justify-between hover:bg-rose-50 transition-colors group"
           >
             <div className="flex items-center gap-4">

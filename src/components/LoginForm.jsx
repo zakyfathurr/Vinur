@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { isValidEmail } from '../utils'
 import { CheckIcon, XIcon, EyeOpenIcon, EyeClosedIcon } from '../icons'
+import { api, setToken } from '../api'
 
 const Logo = () => (
   <div className="flex items-center gap-3 mb-8">
@@ -14,15 +15,33 @@ const Logo = () => (
   </div>
 )
 
-export default function LoginForm({ formData, update, go }) {
+export default function LoginForm({ formData, update, go, hydrate }) {
   const [showPass, setShowPass] = useState(false)
   const [touched, setTouched] = useState({ email: false, password: false })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const emailValid = isValidEmail(formData.email)
   const passwordFilled = formData.password.length > 0
-  const canSubmit = emailValid && passwordFilled
+  const canSubmit = emailValid && passwordFilled && !submitting
   const showEmailFeedback = touched.email && formData.email.length > 0
   const showPasswordFeedback = touched.password && !passwordFilled
+
+  const handleLogin = async () => {
+    if (!canSubmit) return
+    setSubmitting(true)
+    setError('')
+    try {
+      const data = await api.login(formData.email, formData.password)
+      setToken(data.token)
+      hydrate(data)
+      go('menu')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="card">
@@ -101,12 +120,19 @@ export default function LoginForm({ formData, update, go }) {
         )}
       </div>
 
+      {error && (
+        <p className="field-hint text-rose-500 mb-3 flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-base">error</span>
+          {error}
+        </p>
+      )}
+
       <button
         className="btn-primary mb-4"
         disabled={!canSubmit}
-        onClick={() => go('menu')}
+        onClick={handleLogin}
       >
-        Masuk
+        {submitting ? 'Memproses…' : 'Masuk'}
       </button>
 
       <p className="text-center text-sm text-ink-600">
